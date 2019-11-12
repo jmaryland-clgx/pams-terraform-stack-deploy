@@ -79,11 +79,13 @@ Luckily with this pattern in use, a deployment to "default" workspace in "prod" 
 
 ## Jenkins configuration walkthrough
 
-work in progress
-
 ### Setup ssh auth for terraform
 
-work in progress
+1. http://$JENKINS_RUL/credentials/store/system/domain/_/newCredentials
+1. Kind: SSH Username with private key
+1. Scope: Global
+1. Fill the other fields as desired
+1. Edit the jenkinsfile "sshagent" section/s to match your key values
 
 ### Pipeline setup steps
 
