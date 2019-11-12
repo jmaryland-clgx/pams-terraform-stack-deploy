@@ -1,6 +1,6 @@
 # TODO
 
-- Link to relevant files and URLS in readme
+- Pass ssh/known hosts to terraform
 - Fill out Jenkins configuration in readme once ssh is solved
-- Add .devcontainer with jenkins setup for easy testing
+- Link to relevant files and URLS in readme for terraform automation
 - Add example tests in ci/cd pipeline
