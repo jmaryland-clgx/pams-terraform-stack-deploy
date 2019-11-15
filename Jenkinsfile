@@ -2,13 +2,14 @@ pipeline {
     agent {
         dockerfile {
             filename 'Dockerfile'
-        	// args '-v $HOME/.ssh:$HOME/.ssh:ro'
+            additionalBuildArgs "--build-arg terraform_version=0.11.14"
         }
     }
     stages {
         stage('Lint') {
             steps {
-                sh 'terraform fmt -check'
+                sh 'terraform version'
+                sh 'terraform fmt -check' // fail build on lint corrections
                  sshagent(['testauth']) {
                     sh 'echo SSH_AUTH_SOCK=$SSH_AUTH_SOCK'
                     sh 'ls -al $SSH_AUTH_SOCK || true'
