@@ -10,7 +10,7 @@ pipeline {
             steps {
                 sh 'terraform version'
                 sh 'terraform fmt -check' // fail build on lint corrections
-                 sshagent(['testauth']) {
+                sshagent(['testauth']) {
                     sh 'echo SSH_AUTH_SOCK=$SSH_AUTH_SOCK'
                     sh 'ls -al $SSH_AUTH_SOCK || true'
                     sh 'ssh -vvv -o StrictHostKeyChecking=no git.epam.com uname -a || true'
@@ -21,6 +21,9 @@ pipeline {
         }
         stage('Sandbox') { // Deploy to default backend/state using default workspace
             steps {
+                //when {
+                //    branch 'develop' // Optional for git flow
+                //}
                 sh 'echo "replace me with default credentials for GOOGLE_CREDENTIALS"'
                 // or GOOGLE_CLOUD_KEYFILE_JSON
                 // or  GCLOUD_KEYFILE_JSON
@@ -39,6 +42,9 @@ pipeline {
         }
         stage('Prod') {  // Deploy to prod backend/state using prod workspace
             steps {
+                when {
+                    branch 'master'
+                }
                 sh 'echo "replace me with prod credentials for GOOGLE_CREDENTIALS"'
                 sshagent(['testauth']) {
                     sh 'echo SSH_AUTH_SOCK=$SSH_AUTH_SOCK'
