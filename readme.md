@@ -4,6 +4,32 @@ Opinionated stack deployment for use with Jenkins CI/CD (Atlantis incoming). Bas
 
 Feel free to use this as a starting point for new deployments and projects.
 
+## Quickstart for a new project
+
+1. Download or fork this repo. Cloning is not recommended as that will already have git configuration.
+1. Replace terraform backend config in main.tf with lowest level environment config. For example, dev or sandbox. local deployments should be acceptable here.
+1. Add or edit the \*.tfbackend files to fit your needs for higher level environments. For example, staging, UAT, production, DR. Anywhere that local deploys are not acceptable.
+1. Edit the various \*.tf files to fit your project needs.
+1. `terraform init`
+1. `terraform plan -out .terraform/plan` # Generate and store plan locally.
+1. `terraform apply .terraform/plan` # Apply generated plan to a shared development environment with dev settings.
+1. (Optional) Edit Jenkinsfile to fit your CI/CD strategy.
+1. if CI/CD is configured, it will deploy to higher level environments with different backends and explicitly set workspaces.
+
+## Common developer workflow for project deployments
+
+1. Create a new feature branch
+1. (Optional) create or select a personal workspace instead of default. Example: `terraform workspace new phillipfry` OR `terraform workspace select phillipfry`
+1. Add/Edit \*.tf files
+1. `terraform init`
+1. `terraform plan -out .terraform/plan`
+1. Review generated plan.
+1. `terraform apply .terraform/plan`
+1. Run validators(kitchen-ci, terratest, etc.)
+1. git commit
+1. git push
+1. Open merge-request or pull-request and ask for team review of proposed(and tested) changes.
+
 ## Environment separation strategy
 
 We recommend separating environments in using 2 terraform techniques. Workspaces, and backends.
@@ -48,45 +74,28 @@ Luckily with this pattern in use, a deployment to "default" workspace in "prod" 
 
 - docker
 - Jenkins or cloud bees Jenkins distribution(free license required) docker images
-  - Install docker in container and mount the docker sock to emulate docker in docker
+- Install docker in container and mount the docker sock to emulate docker in docker
 - ssh key for Jenkins to read checkout root repo and private terraform module dependencies
-
-## Quickstart for a new project
-
-1. Download or fork this repo. Cloning is not recommended as that will already have git configuration.
-1. Replace terraform backend config in main.tf with lowest level environment config. For example, dev or sandbox. local deployments should be acceptable here.
-1. Add or edit the \*.tfbackend files to fit your needs for higher level environments. For example, staging, UAT, production, DR. Anywhere that local deploys are not acceptable.
-1. Edit the various \*.tf files to fit your project needs.
-1. `terraform init`
-1. `terraform plan -out .terraform/plan` # Generate and store plan locally.
-1. `terraform apply .terraform/plan` # Apply generated plan to a shared development environment with dev settings.
-1. (Optional) Edit Jenkinsfile to fit your CI/CD strategy.
-1. if CI/CD is configured, it will deploy to higher level environments with different backends and explicitly set workspaces.
-
-## Common developer workflow for project deployments
-
-1. Create a new feature branch
-1. (Optional) create or select a personal workspace instead of default. Example: `terraform workspace new phillipfry` OR `terraform workspace select phillipfry`
-1. Add/Edit \*.tf files
-1. `terraform init`
-1. `terraform plan -out .terraform/plan`
-1. Review generated plan.
-1. `terraform apply .terraform/plan`
-1. Run validators(kitchen-ci, terratest, etc)
-1. git commit
-1. git push
-1. Open merge-request or pull-request and ask for team review of proposed(and tested) changes.
 
 ## Jenkins configuration walkthrough
 
-### Setup ssh auth for terraform
+### Setup ssh auth for terraform private modules
 
-1. http://$JENKINS_RUL/credentials/store/system/domain/_/newCredentials
+1. <http://$JENKINS_RUL/credentials/store/system/domain/_/newCredentials>
 1. Kind: SSH Username with private key
 1. Scope: Global
 1. Fill the other fields as desired
 1. Edit the jenkinsfile "sshagent" section/s to match your key values
 
-### Pipeline setup steps
+### Setup GCP Authentication
 
-work in progress
+1. <http://$JENKINS_RUL/credentials/store/system/domain/_/newCredentials>
+1. Kind: Secret File
+1. Scope: Global
+1. Fill the other fields as desired
+1. Edit the jenkinsfile "withCredentials" sections to match your key values
+
+## Documentation sources
+
+- <https://www.terraform.io/docs/commands/init.html>
+- <https://learn.hashicorp.com/terraform/development/running-terraform-in-automation>
