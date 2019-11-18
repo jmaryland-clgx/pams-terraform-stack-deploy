@@ -42,8 +42,8 @@ provider "google-beta" {
 }
 
 module "simple_bucket" {
-  # Note, ?ref=0.0.1 is a git tag. ?ref= can be followed by branch name, commit hash, or other tags.
-  source = "git::ssh://git@git.epam.com/epm-gcp/terraform/terraform_reference_module.git?ref=v0.0.1"
+  # Note ?ref= can be followed by a git tag, branch name, or commit hash
+  source = "git::ssh://git@git.epam.com/epm-gcp/terraform/terraform_reference_module.git?ref=v0.0.2"
 
   bucket             = "test-bucket"
   random_bucket_name = true
