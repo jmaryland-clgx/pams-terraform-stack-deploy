@@ -32,7 +32,8 @@ pipeline {
                         sh 'terraform init -input=false'
                     }
                     sh 'terraform workspace select default' // or sandbox, dev, etc.
-                    sh 'terraform plan -input=false .terraform/plan'
+                    sh 'terraform plan -input=false .terraform/plan' // optional: --var-file sandbox.tvars
+                    // input "Deploy to sandbox?"
                     sh 'terraform apply -input=false .terraform/plan'
                     sh 'echo "should run validator here. Terratest, inspec, terraform-compliance, etc"'
                 }
@@ -53,6 +54,7 @@ pipeline {
                     sh 'terraform workspace select prod'
                     sh 'terraform plan -input=false .terraform/plan' // optional: --var-file prod.tvars
                     input "Deploy to prod?"
+                    sh 'terraform apply -input=false .terraform/plan'
                     sh 'echo "should run validator here. Terratest, inspec, terraform-compliance, etc"'
                 }
             }
