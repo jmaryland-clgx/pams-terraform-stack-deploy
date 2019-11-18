@@ -20,10 +20,10 @@ pipeline {
             }
         }
         stage('Sandbox') { // Deploy to default backend/state using default workspace
+            //when {
+            //    branch 'develop' // Optional for git flow
+            //}
             steps {
-                //when {
-                //    branch 'develop' // Optional for git flow
-                //}
                 withCredentials([file(credentialsId: 'gcp_creds_test_auth', variable: 'GOOGLE_CREDENTIALS')]) {
                     sshagent(['testauth']) {
                         sh 'echo SSH_AUTH_SOCK=$SSH_AUTH_SOCK'
@@ -32,7 +32,7 @@ pipeline {
                         sh 'terraform init -input=false'
                     }
                     sh 'terraform workspace select default' // or sandbox, dev, etc.
-                    sh 'terraform plan -input=false .terraform/plan' // optional: --var-file sandbox.tvars
+                    sh 'terraform plan -input=false -out=.terraform/plan' // optional: --var-file sandbox.tvars
                     // input "Deploy to sandbox?"
                     sh 'terraform apply -input=false .terraform/plan'
                     sh 'echo "should run validator here. Terratest, inspec, terraform-compliance, etc"'
@@ -40,10 +40,10 @@ pipeline {
             }
         }
         stage('Prod') {  // Deploy to prod backend/state using prod workspace
+            when {
+                branch 'master'
+            }
             steps {
-                when {
-                    branch 'master'
-                }
                 withCredentials([file(credentialsId: 'gcp_creds_test_auth', variable: 'GOOGLE_CREDENTIALS')]) {
                     sshagent(['testauth']) {
                         sh 'echo SSH_AUTH_SOCK=$SSH_AUTH_SOCK'
@@ -52,7 +52,7 @@ pipeline {
                         sh 'terraform init -input=false -backend-config=prod.tfbackend' // use a production statefile
                     }
                     sh 'terraform workspace select prod'
-                    sh 'terraform plan -input=false .terraform/plan' // optional: --var-file prod.tvars
+                    sh 'terraform plan -input=false -out=.terraform/plan' // optional: --var-file prod.tvars
                     input "Deploy to prod?"
                     sh 'terraform apply -input=false .terraform/plan'
                     sh 'echo "should run validator here. Terratest, inspec, terraform-compliance, etc"'
