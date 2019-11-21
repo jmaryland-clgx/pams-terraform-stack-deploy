@@ -14,6 +14,14 @@ Feel free to use this as a starting point for new deployments and projects.
 1. `terraform plan -out .terraform/plan` # Generate and store plan locally.
 1. `terraform apply .terraform/plan` # Apply generated plan to a shared development environment with dev settings.
 1. (Optional) Edit Jenkinsfile to fit your CI/CD strategy.
+1. (Optional, repeat per target environment beyond shared dev)
+
+   ```bash
+   rm -rf .terraform;
+   terraform init -backend-config=higherlevel.tfbackend
+   terraform workspace new higherlevel
+   ```
+
 1. if CI/CD is configured, it will deploy to higher level environments with different backends and explicitly set workspaces.
 
 ## Common developer workflow for project deployments
@@ -36,9 +44,9 @@ We recommend separating environments in using 2 terraform techniques. Workspaces
 
 ### Terraform workspace separation
 
-Terraform workspaces use the same backend and state file but track entirely separate copies of the defined resources. If you don't specify a workspace with "terraform workspace new" or "terraform workspace select" commands then you are operating on the "default" workspace.
+Terraform workspaces use the same backend and state file but track entirely separate copies of the defined resources. If you don't specify a workspace with `terraform workspace new` or `terraform workspace select` commands then you are operating on the "default" workspace.
 
-For example, we have a project "planet-express" with one backend named "planet-express-state-storage-bucket". We init -> plan -> apply our terraform and are serving planet-express in the cloud on the default workspace. Now we want to add some features, but we don't want to impact our first deployment yet. We can use "terraform workspace new Phillip_Fry" then plan -> apply will not be aware of our default workspace resources at all, and will create an entirely new service for us.
+For example, we have a project "planet-express" with one backend named "planet-express-state-storage-bucket". We init -> plan -> apply our terraform and are serving planet-express in the cloud on the default workspace. Now we want to add some features, but we don't want to impact our first deployment yet. We can use `terraform workspace new Phillip_Fry` then plan -> apply will not be aware of our default workspace resources at all, and will create an entirely new service for us.
 
 We can make a separate workspace for each shared environment, developer, or any other separation that makes sense for your project.
 
@@ -62,7 +70,7 @@ The default workspace for the default backend should be considered a "shared dev
 
 In higher level environments with specified backends it is not recommended to use the "default" workspace because that can make variable interpolation more complicated in the terraform code.
 
-For example, when switching to prod.tfbackend you should also switch to the prod workspace with "terraform workspace select prod" so that all of the correct production values are applied, instead of "default" workspace values for that backend.
+For example, when switching to prod.tfbackend you should also switch to the prod workspace with `terraform workspace select prod` so that all of the correct production values are applied, instead of "default" workspace values for that backend.
 
 Luckily with this pattern in use, a deployment to "default" workspace in "prod" backend would only create new and separate resources with development values. In almost all cases this would not cause an outage but it would be a waste of money and would require cleanup.
 
@@ -81,7 +89,7 @@ Luckily with this pattern in use, a deployment to "default" workspace in "prod" 
 
 ### Setup ssh auth for terraform private modules
 
-1. <http://$JENKINS_RUL/credentials/store/system/domain/_/newCredentials>
+1. <http://$JENKINS_URL/credentials/store/system/domain/_/newCredentials>
 1. Kind: SSH Username with private key
 1. Scope: Global
 1. Fill the other fields as desired
@@ -89,7 +97,7 @@ Luckily with this pattern in use, a deployment to "default" workspace in "prod" 
 
 ### Setup GCP Authentication
 
-1. <http://$JENKINS_RUL/credentials/store/system/domain/_/newCredentials>
+1. <http://$JENKINS_URL/credentials/store/system/domain/_/newCredentials>
 1. Kind: Secret File
 1. Scope: Global
 1. Fill the other fields as desired
