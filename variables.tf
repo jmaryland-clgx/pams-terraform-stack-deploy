@@ -1,17 +1,17 @@
 # Descriptions should always be provided for terraform-docs/terraform-config-inspect
 variable "project" {
   type        = "map"
-  description = "GCP project to use"
+  description = "GCP project ID to target per workspace"
 
   default = {
-    default = "dev GCP project ID"
-    prod    = "prod GCP project ID"
+    default = "rmeis-test-staging-tf"
+    prod    = "rmeis-test-prod-tf"
   }
 }
 
 variable "region" {
   type        = "map"
-  description = "GCP project to use"
+  description = "GCP default region per workspace"
 
   default = {
     default = "us-central1"
@@ -21,7 +21,7 @@ variable "region" {
 
 variable "zone" {
   type        = "map"
-  description = "GCP project to use"
+  description = "GCP default AZ per workspace"
 
   default = {
     default = "a"

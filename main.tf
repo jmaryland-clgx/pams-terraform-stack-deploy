@@ -13,9 +13,9 @@ terraform {
     # CI/CD can manage higher level environment backends. staging, uat, prod, etc. "terraform init -backend-config=..."
     # https://www.terraform.io/docs/backends/config.html#partial-configuration
     # We manage higher level backends in *.tfbackend files listed in root with override values
-    bucket = "myDevStorageBucket"
+    bucket = "rmeis-test-staging-tf" # REPLACE ME WITH VALID BUCKET
 
-    prefix = "myTerraformProjectName"
+    prefix = "myTerraformProjectName" # REPLACE ME WITH APPROPRIATE PROJECT NAME
   }
 }
 

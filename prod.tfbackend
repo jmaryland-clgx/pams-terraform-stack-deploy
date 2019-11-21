@@ -1,1 +1,1 @@
-bucket = "myProdStorageBucket"
+bucket = "rmeis-test-prod-tf" # REPLACE ME WITH VALID BUCKET
