@@ -1,3 +1,4 @@
+#!/usr/bin/env groovy
 pipeline {
     agent {
         dockerfile {
@@ -5,6 +6,10 @@ pipeline {
             additionalBuildArgs "--build-arg terraform_version=0.11.14"
         }
     }
+    //environment {
+    //    // evaluate use of:
+    //    // TF_IN_AUTOMATION = 'true'
+    //}
     stages {
         stage('Lint') {
             steps {
@@ -17,6 +22,7 @@ pipeline {
                     sh 'terraform init -input=false -backend=false' //dont try to connect to a backend yet
                 }
                 sh 'terraform validate'
+                sh 'rm -rf .terraform' // cleanup
             }
         }
         stage('Sandbox') { // Deploy to default backend/state using default workspace
@@ -36,6 +42,7 @@ pipeline {
                     // input "Deploy to sandbox?"
                     sh 'terraform apply -input=false .terraform/plan'
                     sh 'echo "should run validator here. Terratest, inspec, terraform-compliance, etc"'
+                    sh 'rm -rf .terraform' // cleanup
                 }
             }
         }
