@@ -1,0 +1,60 @@
+#!/usr/bin/env groovy
+pipeline {
+    agent {
+        dockerfile {
+            filename 'Dockerfile'
+            additionalBuildArgs "--build-arg terraform_version=0.11.14"
+        }
+    }
+    //environment {
+    //    // evaluate use of:
+    //    // TF_IN_AUTOMATION = 'true'
+    //}
+    parameters {
+        string(name: 'TERRAFORM_WORKSPACE_NAME', defaultValue: 'default', description: 'The terraform workspace to target')
+        string(name: 'TERRAFORM_INIT_ARGS', defaultValue: '', description: 'ex: -backend-config=staging.tfbackend')
+        string(name: 'TERRAFORM_PRIV_REGISTRY_TLD', defaultValue: 'git.epam.com', description: 'Top level domain for terraform modules')
+    }
+    stages {
+        stage('Lint') {
+            steps {
+                sh 'terraform version'
+                sh 'terraform fmt -check' // fail build on lint corrections
+                sshagent(['testauth']) {
+                    sh 'echo SSH_AUTH_SOCK=$SSH_AUTH_SOCK'
+                    sh 'ls -al $SSH_AUTH_SOCK || true'
+                    sh "ssh -vvv -o StrictHostKeyChecking=no ${params.TERRAFORM_PRIV_REGISTRY_TLD} uname -a || true"
+                    sh 'terraform init -input=false -backend=false' //dont try to connect to a backend yet
+                }
+                sh 'terraform validate'
+                sh 'rm -rf .terraform' // cleanup
+            }
+        }
+        stage('Deploy') {
+            steps {
+                //// You can optionally remove the entire deploy stage, and add callouts to a separately defined job
+                //  build job:'exactJobName' , parameters:[
+                //   string(name: 'keyNameOfParam1',value: 'valueOfParam1')
+                //   booleanParam(name: 'keyNameOfParam2',value:'valueOfParam2')
+                //  ]
+                //// You can still lock down production or live releases to certain branch names
+                //script {
+                //    if (env.TERRAFORM_WORKSPACE_NAME == 'prod' && env.BRANCH_NAME != 'master') {
+                //        error 'Production Deploys should only launch from master branch'
+                //    }
+                //}
+                withCredentials([file(credentialsId: 'gcp_creds_test_auth', variable: 'GOOGLE_CREDENTIALS')]) {
+                    sshagent(['testauth']) {
+                        sh "terraform init -input=false ${params.TERRAFORM_INIT_ARGS}"
+                        sh "terraform workspace new ${params.TERRAFORM_WORKSPACE_NAME} || true" // Create workspace if missing
+                        sh "terraform workspace select ${params.TERRAFORM_WORKSPACE_NAME}"
+                        sh "terraform plan -out=.terraform/plan"
+                    }
+                    input "Deploy to ${params.TERRAFORM_WORKSPACE_NAME} env/workspace?"
+                    sh 'terraform apply -input=false .terraform/plan'
+                    sh 'echo "should run validator here. Terratest, inspec, terraform-compliance, etc"'
+                }
+            }
+        }
+    }
+}

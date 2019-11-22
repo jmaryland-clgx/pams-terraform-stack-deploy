@@ -107,3 +107,19 @@ Luckily with this pattern in use, a deployment to "default" workspace in "prod" 
 
 - <https://www.terraform.io/docs/commands/init.html>
 - <https://learn.hashicorp.com/terraform/development/running-terraform-in-automation>
+
+## Optional Jenkinsfile.alt
+
+This is not suggested for most teams as it allows for far more human error(copy-paste, fatfingering, etc). Teams using this option will need to set strict rules and expectations about how deployments should be handled/approved for all environments. Some of it can be codified using "script" syntax(example is present in Jenkinsfile.alt and commented out)
+
+You can use an alternate jenkinsfile by overwriting Jenkinsfile with Jenkinsfile.alt.
+
+This option is useful for teams who want any commit(to any branch) to be deployable to any environment through a bit of manual work on Jenkins.
+
+This guarantees that "the same terraform code" that was applied in staging can be applied in production on demand. Regardless of source branch or possible git merge issues.
+
+Default parameters should be set to deploy to a shared development environment or sandbox account. Higher level builds should be "rebuilt" with new parameters by the appropriate engineers.
+
+The "https://wiki.jenkins.io/display/JENKINS/Rebuild+Plugin" is required to help with these "rebuild with new parameters" activities from the Jenkins GUI.
+
+To Rerun a build with new parameters go to http://$JENKINS_URL/job/$PIPELINE_NAME/job/$BUILD_NAME/$BUILD_ID/rebuild/parameterized
