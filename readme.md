@@ -1,4 +1,4 @@
-# Terraform Reference Stack Deploy
+# Terraform Stack Deploy
 
 Opinionated stack deployment for use with Jenkins CI/CD (Atlantis incoming). Based on best practices recommended by hashicorp/terraform.
 
